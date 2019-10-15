@@ -1,8 +1,10 @@
 package ui
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/chromedp/chromedp"
 	"github.com/parnurzeal/gorequest"
 	"io/ioutil"
 	"log"
@@ -14,6 +16,12 @@ import (
 	"time"
 )
 
+//截图数量
+var num, min_num, max_num int = 0, 0, 20
+//是否开启debug
+var debug bool = false
+var img_dir string = "./img/"
+
 func transTime(time_mill string) time.Duration {
 	t, err := strconv.Atoi(time_mill)
 	if err == nil && t > 0 {
@@ -22,9 +30,10 @@ func transTime(time_mill string) time.Duration {
 	return 0
 }
 
-func WriteImg(ui []byte, logs string) {
-	//声明式调试或者因为截图时，才截图
-	if !(debug == true || logs == "Capture") {
+func WriteImg(ctx context.Context, logs string) {
+
+	//声明式调试时，才截图
+	if !debug {
 		return
 	}
 
@@ -36,17 +45,26 @@ func WriteImg(ui []byte, logs string) {
 		}
 	}
 
-	if num == max_num {
-		num = min_num
-	}
-
-	go WriteFile(ui, logs)
+	var ui []byte
+	go SaveImage(ctx, ui, logs)
 	return
 }
 
 //保存截图
-func WriteFile(ui []byte, logs string) {
+func SaveImage(ctx context.Context, ui []byte, logs string) {
 
+	if len(ui) == 0 {
+		err := chromedp.Run(ctx,
+			chromedp.CaptureScreenshot(&ui),
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	if num == max_num {
+		num = min_num
+	}
 	//num为全局变量
 	num++
 

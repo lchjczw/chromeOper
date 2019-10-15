@@ -18,12 +18,6 @@ import (
 	"time"
 )
 
-//截图数量
-var num, min_num, max_num int = 0, 0, 20
-//是否开启debug
-var debug bool = false
-var img_dir string = "./img/"
-
 func getDevice(dev string) chromedp.Device {
 	var devi chromedp.Device = nil
 	switch dev {
@@ -42,59 +36,48 @@ func getDevice(dev string) chromedp.Device {
 
 }
 
-
 //点击
 func ClickTime(ctx context.Context, sel string, t time.Duration) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Click(sel),
 		chromedp.Sleep(t),
 	)
-	WriteImg(ui, "ClickTime")
+	WriteImg(ctx, "ClickTime")
 
 	return err
 }
 func Click(ctx context.Context, sel string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Click(sel),
 	)
-	WriteImg(ui, "Click")
+	WriteImg(ctx, "Click")
 
 	return err
 }
 func Submit(ctx context.Context, sel string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Submit(sel, chromedp.NodeVisible),
 	)
-	WriteImg(ui, "Submit")
+	WriteImg(ctx, "Submit")
 
 	return err
 }
 func ClickByQuery(ctx context.Context, sel string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Click(sel, chromedp.ByQuery),
 	)
-	WriteImg(ui, "ClickByQuery")
+	WriteImg(ctx, "ClickByQuery")
 
 	return err
 }
 
 func ClickByQueryTime(ctx context.Context, sel string, t time.Duration) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
 		//chromedp.WaitVisible(sel, chromedp.ByQuery),
 		chromedp.Sleep(t),
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Click(sel, chromedp.ByQuery),
 	)
-	WriteImg(ui, "ClickByQueryTime")
+	WriteImg(ctx, "ClickByQueryTime")
 
 	return err
 }
@@ -103,68 +86,52 @@ func SetDevice(ctx context.Context, device string) error {
 	return chromedp.Run(ctx, chromedp.Emulate(dev))
 }
 func OpenUrl(ctx context.Context, url string) error {
-	var ui []byte
 	err := chromedp.Run(
 		ctx,
 		chromedp.Navigate(url),
-		chromedp.CaptureScreenshot(&ui),
 	)
-	WriteImg(ui, "OpenUrl")
+	WriteImg(ctx, "OpenUrl")
 
 	return err
 }
 func Sleep(ctx context.Context, t time.Duration) error {
-	var ui []byte
-
 	err := chromedp.Run(
 		ctx,
 		chromedp.Sleep(t),
-		chromedp.CaptureScreenshot(&ui),
 	)
 
-	WriteImg(ui, "Sleep")
+	WriteImg(ctx, "Sleep")
 
 	return err
 }
 func Reload(ctx context.Context, t time.Duration) error {
-	var ui []byte
-
 	err := chromedp.Run(
 		ctx,
 		chromedp.Reload(),
 		chromedp.Sleep(t),
-		chromedp.CaptureScreenshot(&ui),
-
 	)
 
-	WriteImg(ui, "Reload")
+	WriteImg(ctx, "Reload")
 
 	return err
 }
 func SendKeys(ctx context.Context, sel, val string) error {
-	var ui []byte
-
 	err := chromedp.Run(
 		ctx,
 		chromedp.SendKeys(sel, val, chromedp.NodeVisible),
-		chromedp.CaptureScreenshot(&ui),
-
 	)
 
-	WriteImg(ui, "SendKeys")
+	WriteImg(ctx, "SendKeys")
 
 	return err
 }
 func SetValue(ctx context.Context, sel, val string) error {
-	var ui []byte
-
 	err := chromedp.Run(
 		ctx,
 		chromedp.SetValue(sel, val, chromedp.NodeVisible),
-		chromedp.CaptureScreenshot(&ui),
 	)
 
-	WriteImg(ui, "SetValue")
+	WriteImg(ctx, "SetValue")
 
 	return err
 }
@@ -184,85 +151,71 @@ func Capture(ctx context.Context, sel, logs string) error {
 		)
 	}
 
-	WriteImg(ui, "Capture")
+	SaveImage(ctx, ui, "Capture")
 
 	log.Println("截图：", fmt.Sprintf("%03d", num)+".Capture.png", logs)
 
 	return err
 }
 func ClickByQueryWaitNoVisible(ctx context.Context, sel string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Click(sel, chromedp.ByQuery),
 		chromedp.WaitNotVisible(sel, chromedp.ByQuery),
 	)
 
-	WriteImg(ui, "ClickByQueryWaitNoVisible")
+	WriteImg(ctx, "ClickByQueryWaitNoVisible")
 
 	return err
 }
 func ClickWaitNoVisible(ctx context.Context, sel string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Click(sel),
 		chromedp.WaitNotVisible(sel),
 	)
-	WriteImg(ui, "ClickWaitNoVisible")
+	WriteImg(ctx, "ClickWaitNoVisible")
 
 	return err
 }
 func GetText(ctx context.Context, sel string, v *string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Text(sel, v),
 	)
 
-	WriteImg(ui, "GetText")
+	WriteImg(ctx, "GetText")
 	return err
 }
 
 func GetOuterHTML(ctx context.Context, sel string, v *string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.OuterHTML(sel, v),
 	)
 
-	WriteImg(ui, "GetOuterHTML")
+	WriteImg(ctx, "GetOuterHTML")
 	return err
 }
 func GetValue(ctx context.Context, sel string, v *string) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.Value(sel, v),
 	)
 
-	WriteImg(ui, "GetValue")
+	WriteImg(ctx, "GetValue")
 	return err
 }
 func GetAttributeValue(ctx context.Context, sel, name string, v *string, ok *bool) error {
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.AttributeValue(sel, name, v, ok),
 	)
-	WriteImg(ui, "GetAttributeValue")
+	WriteImg(ctx, "GetAttributeValue")
 
 	return err
 }
 
 func ClickLoopTime(ctx context.Context, sel, count string, t time.Duration) error {
-	var ui []byte
 	var err error = nil
 	n, _ := strconv.Atoi(count)
 
 	for i := 0; i < n; i++ {
 		err = chromedp.Run(ctx,
-			chromedp.CaptureScreenshot(&ui),
 			chromedp.Click(sel),
 			chromedp.Sleep(t),
 		)
@@ -271,7 +224,7 @@ func ClickLoopTime(ctx context.Context, sel, count string, t time.Duration) erro
 		}
 	}
 
-	WriteImg(ui, "ClickLoopTime")
+	WriteImg(ctx, "ClickLoopTime")
 	return err
 }
 
@@ -461,15 +414,13 @@ func RunStep(ctx context.Context, oper *Oper) error {
 
 func GetCookies(ctx context.Context, Cookies *interface{}) error {
 
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.ActionFunc(ck.GetChromedpCookies),
 	)
 
 	*Cookies = *ck.GetCookies()
 
-	WriteImg(ui, "GetCookies")
+	WriteImg(ctx, "GetCookies")
 
 	return err
 }
@@ -478,17 +429,14 @@ func SetCookies(ctx context.Context, Cookies interface{}) error {
 
 	ck.SetCookies(Cookies.([]*network.Cookie))
 
-	var ui []byte
 	err := chromedp.Run(ctx,
-		chromedp.CaptureScreenshot(&ui),
 		chromedp.ActionFunc(ck.SetChromedpCookies),
 	)
 
-	WriteImg(ui, "SetCookies")
+	WriteImg(ctx, "SetCookies")
 
 	return err
 }
-
 
 func NewChromeTab(ctx context.Context) (context.Context, context.CancelFunc) {
 
