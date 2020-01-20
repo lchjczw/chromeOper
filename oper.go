@@ -37,6 +37,7 @@ func getDevice(dev string) chromedp.Device {
 }
 
 //点击
+
 func ClickTime(ctx context.Context, sel string, t time.Duration) error {
 	err := chromedp.Run(ctx,
 		chromedp.Click(sel),
@@ -73,7 +74,6 @@ func ClickByQuery(ctx context.Context, sel string) error {
 
 func ClickByQueryTime(ctx context.Context, sel string, t time.Duration) error {
 	err := chromedp.Run(ctx,
-		//chromedp.WaitVisible(sel, chromedp.ByQuery),
 		chromedp.Sleep(t),
 		chromedp.Click(sel, chromedp.ByQuery),
 	)
@@ -234,7 +234,7 @@ type Oper struct {
 	Value    string //参数 ,value body
 	Oper     string //执行操作 ,oper url
 	Sel      string //界面元素定位,sel header
-	TimeOut  string //time_out
+	TimeOut  time.Duration    //time_out
 	OtherArg interface{}
 	Result
 	Hook
@@ -299,16 +299,16 @@ func (a *Oper) Request() error {
 func UiRefresh(ctx context.Context) error {
 
 	oper := new(Oper)
-	oper.TimeOut = "30"
+	oper.TimeOut = 30
 	oper.Oper = "Reload"
 
 	return RunStep(ctx, oper)
 }
 
-func UiSleep(ctx context.Context, t int) error {
+func UiSleep(ctx context.Context, t time.Duration) error {
 
 	oper := new(Oper)
-	oper.TimeOut = fmt.Sprintf("%d", t)
+	oper.TimeOut = t
 	oper.Oper = "Sleep"
 
 	return RunStep(ctx, oper)
@@ -331,10 +331,10 @@ func RunStep(ctx context.Context, oper *Oper) error {
 		err = SendKeys(ctx, oper.Sel, oper.Value)
 		break
 	case "Reload":
-		err = Reload(ctx, transTime(oper.TimeOut))
+		err = Reload(ctx, oper.TimeOut)
 		break
 	case "Sleep":
-		err = Sleep(ctx, transTime(oper.TimeOut))
+		err = Sleep(ctx, oper.TimeOut)
 		break
 	case "OpenUrl":
 		err = OpenUrl(ctx, oper.Value)
@@ -343,7 +343,7 @@ func RunStep(ctx context.Context, oper *Oper) error {
 		err = SetDevice(ctx, oper.Value)
 		break
 	case "ClickByQueryTime":
-		err = ClickByQueryTime(ctx, oper.Sel, transTime(oper.TimeOut))
+		err = ClickByQueryTime(ctx, oper.Sel, oper.TimeOut)
 		break
 	case "ClickByQuery":
 		err = ClickByQuery(ctx, oper.Sel)
@@ -355,7 +355,7 @@ func RunStep(ctx context.Context, oper *Oper) error {
 		err = Capture(ctx, oper.Sel, oper.Value)
 		break
 	case "ClickTime":
-		err = ClickTime(ctx, oper.Sel, transTime(oper.TimeOut))
+		err = ClickTime(ctx, oper.Sel, oper.TimeOut)
 		break
 	case "ClickByQueryWaitNoVisible":
 		err = ClickByQueryWaitNoVisible(ctx, oper.Sel)
@@ -364,7 +364,7 @@ func RunStep(ctx context.Context, oper *Oper) error {
 		err = ClickWaitNoVisible(ctx, oper.Sel)
 		break
 	case "ClickLoopTime":
-		err = ClickLoopTime(ctx, oper.Sel, oper.Value, transTime(oper.TimeOut))
+		err = ClickLoopTime(ctx, oper.Sel, oper.Value, oper.TimeOut)
 		break
 	case "url":
 		err = oper.Request()
@@ -459,9 +459,9 @@ func NewChromeTab(ctx context.Context) (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-func AddTimeOut(ctx context.Context, t int) (context.Context, context.CancelFunc) {
+func AddTimeOut(ctx context.Context, t time.Duration) (context.Context, context.CancelFunc) {
 	//超时设置
-	return context.WithTimeout(ctx, time.Duration(t)*time.Second)
+	return context.WithTimeout(ctx, t)
 }
 
 func NewChrome(ctx context.Context, is_show bool) (context.Context, context.CancelFunc) {

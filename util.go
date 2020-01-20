@@ -13,7 +13,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //截图数量
@@ -22,13 +21,6 @@ var num, min_num, max_num int = 0, 0, 20
 var debug bool = false
 var img_dir string = "./img/"
 
-func transTime(time_mill string) time.Duration {
-	t, err := strconv.Atoi(time_mill)
-	if err == nil && t > 0 {
-		return time.Duration(t) * time.Millisecond
-	}
-	return 0
-}
 
 func WriteImg(ctx context.Context, logs string) {
 

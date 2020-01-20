@@ -3,8 +3,8 @@ module chromeOper
 go 1.13
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20191013005325-ffea6b31d538
-	github.com/chromedp/chromedp v0.5.1
+	github.com/chromedp/cdproto v0.0.0-20200116234248-4da64dd111ac
+	github.com/chromedp/chromedp v0.5.3
 	github.com/elazarl/goproxy v0.0.0-20191011121108-aa519ddbe484 // indirect
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/pkg/errors v0.8.1 // indirect
