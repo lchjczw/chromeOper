@@ -1,4 +1,4 @@
-module chromeOper
+module github.com/lchjczw/chromeOper
 
 go 1.13
 
