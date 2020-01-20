@@ -1,7 +1,7 @@
 package chromeOper
 
 import (
-	ck "chromeOper/cookies"
+	ck "github.com/lchjczw/chromeOper/cookies"
 	"context"
 	"errors"
 	"fmt"
