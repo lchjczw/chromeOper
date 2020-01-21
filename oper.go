@@ -1,13 +1,13 @@
 package chromeOper
 
 import (
-	ck "github.com/lchjczw/chromeOper/cookies"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/device"
+	ck "github.com/lchjczw/chromeOper/cookies"
 	"github.com/parnurzeal/gorequest"
 	"io/ioutil"
 	"log"
@@ -41,8 +41,9 @@ func getDevice(dev string) chromedp.Device {
 func ClickTime(ctx context.Context, sel string, t time.Duration) error {
 	err := chromedp.Run(ctx,
 		chromedp.Click(sel),
-		chromedp.Sleep(t),
 	)
+
+	Sleep(ctx, t)
 	WriteImg(ctx, "ClickTime")
 
 	return err
@@ -74,9 +75,9 @@ func ClickByQuery(ctx context.Context, sel string) error {
 
 func ClickByQueryTime(ctx context.Context, sel string, t time.Duration) error {
 	err := chromedp.Run(ctx,
-		chromedp.Sleep(t),
 		chromedp.Click(sel, chromedp.ByQuery),
 	)
+	Sleep(ctx, t)
 	WriteImg(ctx, "ClickByQueryTime")
 
 	return err
@@ -95,22 +96,20 @@ func OpenUrl(ctx context.Context, url string) error {
 	return err
 }
 func Sleep(ctx context.Context, t time.Duration) error {
-	err := chromedp.Run(
+	//time.Sleep(t)
+	return chromedp.Run(
 		ctx,
 		chromedp.Sleep(t),
 	)
-
-	WriteImg(ctx, "Sleep")
-
-	return err
 }
+
 func Reload(ctx context.Context, t time.Duration) error {
 	err := chromedp.Run(
 		ctx,
 		chromedp.Reload(),
-		chromedp.Sleep(t),
 	)
 
+	Sleep(ctx, t)
 	WriteImg(ctx, "Reload")
 
 	return err
@@ -194,8 +193,9 @@ func GetOuterHTML(ctx context.Context, sel string, v *string) error {
 	return err
 }
 func GetValue(ctx context.Context, sel string, v *string) error {
+
 	err := chromedp.Run(ctx,
-		chromedp.Value(sel, v),
+		chromedp.Value(sel, v, chromedp.NodeVisible),
 	)
 
 	WriteImg(ctx, "GetValue")
@@ -203,7 +203,7 @@ func GetValue(ctx context.Context, sel string, v *string) error {
 }
 func GetAttributeValue(ctx context.Context, sel, name string, v *string, ok *bool) error {
 	err := chromedp.Run(ctx,
-		chromedp.AttributeValue(sel, name, v, ok),
+		chromedp.AttributeValue(sel, name, v, ok, chromedp.NodeVisible),
 	)
 	WriteImg(ctx, "GetAttributeValue")
 
@@ -219,22 +219,23 @@ func ClickLoopTime(ctx context.Context, sel, count string, t time.Duration) erro
 			chromedp.Click(sel),
 			chromedp.Sleep(t),
 		)
+		WriteImg(ctx, "ClickLoopTime")
 		if err != nil {
 			break
 		}
 	}
 
-	WriteImg(ctx, "ClickLoopTime")
+
 	return err
 }
 
 // BetUiOper bet_ui_oper对象
 type Oper struct {
-	Name     string //操作标识，同一个gettext，可以不同的标识，以执行不同的逻辑
-	Value    string //参数 ,value body
-	Oper     string //执行操作 ,oper url
-	Sel      string //界面元素定位,sel header
-	TimeOut  time.Duration    //time_out
+	Name     string        //操作标识，同一个gettext，可以不同的标识，以执行不同的逻辑
+	Value    string        //参数 ,value body
+	Oper     string        //执行操作 ,oper url
+	Sel      string        //界面元素定位,sel header
+	TimeOut  time.Duration //time_out
 	OtherArg interface{}
 	Result
 	Hook
@@ -436,6 +437,24 @@ func SetCookies(ctx context.Context, Cookies interface{}) error {
 	WriteImg(ctx, "SetCookies")
 
 	return err
+}
+func NewChromeDp() (context.Context, context.CancelFunc) {
+
+	err := CheckEnv()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx, cancel := chromedp.NewContext(
+		context.Background(),
+	)
+
+	err = chromedp.Run(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return ctx, cancel
 }
 
 func NewChromeTab(ctx context.Context) (context.Context, context.CancelFunc) {

@@ -18,9 +18,9 @@ import (
 //截图数量
 var num, min_num, max_num int = 0, 0, 20
 //是否开启debug
-var debug bool = false
+var debug bool = true
+var is_sync bool = false
 var img_dir string = "./img/"
-
 
 func WriteImg(ctx context.Context, logs string) {
 
@@ -38,7 +38,12 @@ func WriteImg(ctx context.Context, logs string) {
 	}
 
 	var ui []byte
-	go SaveImage(ctx, ui, logs)
+	if is_sync {
+		go SaveImage(ctx, ui, logs)
+	}else {
+		SaveImage(ctx, ui, logs)
+	}
+
 	return
 }
 
@@ -65,6 +70,7 @@ func SaveImage(ctx context.Context, ui []byte, logs string) {
 	//绝对路径
 	file_name, err := filepath.Abs(file_name)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	//删除对应数字编号的图片
