@@ -41,9 +41,9 @@ func getDevice(dev string) chromedp.Device {
 func ClickTime(ctx context.Context, sel string, t time.Duration) error {
 	err := chromedp.Run(ctx,
 		chromedp.Click(sel),
+		chromedp.Sleep(t),
 	)
 
-	Sleep(ctx, t)
 	WriteImg(ctx, "ClickTime")
 
 	return err
@@ -66,6 +66,7 @@ func Submit(ctx context.Context, sel string) error {
 }
 func ClickByQuery(ctx context.Context, sel string) error {
 	err := chromedp.Run(ctx,
+		chromedp.WaitVisible(sel,chromedp.ByQuery),
 		chromedp.Click(sel, chromedp.ByQuery),
 	)
 	WriteImg(ctx, "ClickByQuery")
@@ -75,9 +76,10 @@ func ClickByQuery(ctx context.Context, sel string) error {
 
 func ClickByQueryTime(ctx context.Context, sel string, t time.Duration) error {
 	err := chromedp.Run(ctx,
+		chromedp.WaitVisible(sel,chromedp.ByQuery),
 		chromedp.Click(sel, chromedp.ByQuery),
+		chromedp.Sleep(t),
 	)
-	Sleep(ctx, t)
 	WriteImg(ctx, "ClickByQueryTime")
 
 	return err
