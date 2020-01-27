@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	TIME_TYPE = time.Microsecond
+	TIME_TYPE = time.Millisecond
 )
 
 func GetTime(t int) time.Duration {
