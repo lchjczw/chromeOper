@@ -243,12 +243,11 @@ type Oper struct {
 	Hook
 }
 
-type PreCall func(ctx context.Context, oper *Oper)
-type AfterCall func(ctx context.Context, oper *Oper)
+type Call func(ctx context.Context, oper *Oper) error
 
 type Hook struct {
-	Pre   PreCall
-	After AfterCall
+	Pre   Call
+	After Call
 }
 
 type Result struct {
