@@ -17,13 +17,13 @@ import (
 
 //截图数量
 var num, min_num, max_num int = 0, 0, 20
+
 //是否开启debug
 var debug bool = true
 var is_sync bool = false
 var img_dir string = "./img/"
 
-func WriteImg(ctx context.Context, logs string) {
-
+func WriteImg(ctx context.Context, fileName string) {
 	//声明式调试时，才截图
 	if !debug {
 		return
@@ -39,16 +39,38 @@ func WriteImg(ctx context.Context, logs string) {
 
 	var ui []byte
 	if is_sync {
-		go SaveImage(ctx, ui, logs)
-	}else {
-		SaveImage(ctx, ui, logs)
+		go SaveImage(ctx, ui, fileName, true)
+	} else {
+		SaveImage(ctx, ui, fileName, true)
 	}
 
 	return
 }
+func getFileName(fileName string,auto bool) string  {
+	file_name := fileName
+	if auto {
+		if num == max_num {
+			num = min_num
+		}
+		//num为全局变量
+		num++
+		prex := fmt.Sprintf("%03d", num)
+		file_name = fmt.Sprintf("%s/%s.%s.png", img_dir, prex, fileName)
+		//绝对路径
+		file_name, _ = filepath.Abs(file_name)
+		//删除对应数字编号的图片
+		err := DeleteFileByPreFixName(img_dir, prex)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		file_name = fmt.Sprintf("%s/%s.png", img_dir, fileName)
+	}
 
+	return file_name
+}
 //保存截图
-func SaveImage(ctx context.Context, ui []byte, logs string) {
+func SaveImage(ctx context.Context, ui []byte, fileName string, auto bool) {
 
 	if len(ui) == 0 {
 		err := chromedp.Run(ctx,
@@ -58,28 +80,9 @@ func SaveImage(ctx context.Context, ui []byte, logs string) {
 			return
 		}
 	}
-
-	if num == max_num {
-		num = min_num
-	}
-	//num为全局变量
-	num++
-
-	prex := fmt.Sprintf("%03d", num)
-	file_name := fmt.Sprintf("%s/%s.%s.png", img_dir, prex, logs)
-	//绝对路径
-	file_name, err := filepath.Abs(file_name)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	//删除对应数字编号的图片
-	err = DeleteFileByPreFixName(img_dir, prex);
-	if err != nil {
-		log.Println(err)
-	}
+	file_name := getFileName(fileName,auto)
 	//保存截图
-	err = ioutil.WriteFile(file_name, ui, 0777)
+	err := ioutil.WriteFile(file_name, ui, 0777)
 	if err != nil {
 		log.Println(err)
 	}
@@ -110,8 +113,8 @@ func DeleteFileByPreFixName(fileDir, preFix string) error {
 }
 
 //文件或者目录是否存在
-func PathExists(path string) (bool) {
-	_, err := os.Stat(path);
+func PathExists(path string) bool {
+	_, err := os.Stat(path)
 	if err == nil {
 		return true
 	}

@@ -136,7 +136,7 @@ func SetValue(ctx context.Context, sel, val string) error {
 
 	return err
 }
-func Capture(ctx context.Context, sel, logs string) error {
+func Capture(ctx context.Context, sel, fileName string) error {
 	var ui []byte
 
 	var err error
@@ -151,10 +151,13 @@ func Capture(ctx context.Context, sel, logs string) error {
 			chromedp.CaptureScreenshot(&ui),
 		)
 	}
+	if fileName == "" {
+		fileName="Capture"
+	}
 
-	SaveImage(ctx, ui, "Capture")
+	SaveImage(ctx, ui, fileName,false)
 
-	log.Println("截图：", fmt.Sprintf("%03d", num)+".Capture.png", logs)
+	log.Println("截图：", fileName+".png")
 
 	return err
 }
