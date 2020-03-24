@@ -56,6 +56,14 @@ func Click(ctx context.Context, sel string) error {
 
 	return err
 }
+func ClickNoVisible(ctx context.Context, sel string) error {
+	err := chromedp.Run(ctx,
+		chromedp.Click(sel,chromedp.NodeNotVisible),
+	)
+	WriteImg(ctx, "ClickNoVisible")
+
+	return err
+}
 func Submit(ctx context.Context, sel string) error {
 	err := chromedp.Run(ctx,
 		chromedp.Submit(sel, chromedp.NodeVisible),
@@ -66,7 +74,7 @@ func Submit(ctx context.Context, sel string) error {
 }
 func ClickByQuery(ctx context.Context, sel string) error {
 	err := chromedp.Run(ctx,
-		chromedp.WaitVisible(sel,chromedp.ByQuery),
+		chromedp.WaitVisible(sel, chromedp.ByQuery),
 		chromedp.Click(sel, chromedp.ByQuery),
 	)
 	WriteImg(ctx, "ClickByQuery")
@@ -76,7 +84,7 @@ func ClickByQuery(ctx context.Context, sel string) error {
 
 func ClickByQueryTime(ctx context.Context, sel string, t time.Duration) error {
 	err := chromedp.Run(ctx,
-		chromedp.WaitVisible(sel,chromedp.ByQuery),
+		chromedp.WaitVisible(sel, chromedp.ByQuery),
 		chromedp.Click(sel, chromedp.ByQuery),
 		chromedp.Sleep(t),
 	)
@@ -99,10 +107,12 @@ func OpenUrl(ctx context.Context, url string) error {
 }
 func Sleep(ctx context.Context, t time.Duration) error {
 	//time.Sleep(t)
-	return chromedp.Run(
+	chromedp.Run(
 		ctx,
 		chromedp.Sleep(t),
 	)
+	WriteImg(ctx, "Sleep")
+	return nil
 }
 
 func Reload(ctx context.Context, t time.Duration) error {
@@ -152,10 +162,10 @@ func Capture(ctx context.Context, sel, fileName string) error {
 		)
 	}
 	if fileName == "" {
-		fileName="Capture"
+		fileName = "Capture"
 	}
 
-	SaveImage(ctx, ui, fileName,false)
+	SaveImage(ctx, ui, fileName, false)
 
 	log.Println("截图：", fileName+".png")
 
@@ -215,6 +225,19 @@ func GetAttributeValue(ctx context.Context, sel, name string, v *string, ok *boo
 	return err
 }
 
+func SetAttributeValue(ctx context.Context, sel, value string) error {
+	v:=strings.Split(value,"=")
+	if len(v) != 2 {
+		return errors.New("参数错误")
+	}
+	err := chromedp.Run(ctx,
+		chromedp.SetAttributeValue(sel, v[0], v[1]),
+	)
+	WriteImg(ctx, "SetAttributeValue")
+
+	return err
+}
+
 func ClickLoopTime(ctx context.Context, sel, count string, t time.Duration) error {
 	var err error = nil
 	n, _ := strconv.Atoi(count)
@@ -229,7 +252,6 @@ func ClickLoopTime(ctx context.Context, sel, count string, t time.Duration) erro
 			break
 		}
 	}
-
 
 	return err
 }
@@ -356,6 +378,9 @@ func RunStep(ctx context.Context, oper *Oper) error {
 	case "Click":
 		err = Click(ctx, oper.Sel)
 		break
+	case "ClickNoVisible":
+		err = ClickNoVisible(ctx, oper.Sel)
+		break
 	case "Capture":
 		err = Capture(ctx, oper.Sel, oper.Value)
 		break
@@ -386,6 +411,10 @@ func RunStep(ctx context.Context, oper *Oper) error {
 	case "GetAttributeValue":
 		err = GetAttributeValue(ctx, oper.Sel, oper.Value, &oper.Res, &oper.Ok)
 		break
+	case "SetAttributeValue":
+		err = SetAttributeValue(ctx, oper.Sel, oper.Value)
+		break
+		
 	case "Submit":
 		err = Submit(ctx, oper.Sel)
 		break
