@@ -20,15 +20,14 @@ var num, min_num, max_num int = 0, 0, 20
 
 //是否开启debug
 var debug bool = true
-var is_sync bool = false
-var img_dir string = "./img/"
+
+const img_dir string = "./img/"
 
 func WriteImg(ctx context.Context, fileName string) {
 	//声明式调试时，才截图
 	if !debug {
 		return
 	}
-
 	//不存在则创建目录
 	if !PathExists(img_dir) {
 		//	创建目录
@@ -38,37 +37,31 @@ func WriteImg(ctx context.Context, fileName string) {
 	}
 
 	var ui []byte
-	if is_sync {
-		go SaveImage(ctx, ui, fileName, true)
-	} else {
-		SaveImage(ctx, ui, fileName, true)
-	}
+
+	SaveImage(ctx, ui, fileName, true)
 
 	return
 }
-func getFileName(fileName string,auto bool) string  {
+func getFileName(fileName string, auto bool) (string, string) {
 	file_name := fileName
+	prex := ""
 	if auto {
 		if num == max_num {
 			num = min_num
 		}
 		//num为全局变量
 		num++
-		prex := fmt.Sprintf("%03d", num)
+		prex = fmt.Sprintf("%03d", num)
 		file_name = fmt.Sprintf("%s/%s.%s.png", img_dir, prex, fileName)
 		//绝对路径
 		file_name, _ = filepath.Abs(file_name)
-		//删除对应数字编号的图片
-		err := DeleteFileByPreFixName(img_dir, prex)
-		if err != nil {
-			log.Println(err)
-		}
 	} else {
 		file_name = fmt.Sprintf("%s/%s.png", img_dir, fileName)
 	}
 
-	return file_name
+	return file_name, prex
 }
+
 //保存截图
 func SaveImage(ctx context.Context, ui []byte, fileName string, auto bool) {
 
@@ -80,20 +73,35 @@ func SaveImage(ctx context.Context, ui []byte, fileName string, auto bool) {
 			return
 		}
 	}
-	file_name := getFileName(fileName,auto)
-	//保存截图
-	err := ioutil.WriteFile(file_name, ui, 0777)
-	if err != nil {
-		log.Println(err)
-	}
+	prex := ""
+	fileName, prex = getFileName(fileName, auto)
+
+	go func() {
+		//删除对应数字编号的图片
+		err := DeleteFileByPreFixName(img_dir, prex)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		//保存截图
+		err = ioutil.WriteFile(fileName, ui, 0777)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}()
 
 	return
 }
 
 //删除指定前缀的文件
 func DeleteFileByPreFixName(fileDir, preFix string) error {
-	files, _ := ioutil.ReadDir(fileDir)
-	var err error
+	if preFix == "" {
+		return nil
+	}
+
+	files, err := ioutil.ReadDir(fileDir)
+	if err != nil {
+		return err
+	}
 
 	for _, onefile := range files {
 		if onefile.IsDir() {
