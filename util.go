@@ -28,13 +28,7 @@ func WriteImg(ctx context.Context, fileName string) {
 	if !debug {
 		return
 	}
-	//不存在则创建目录
-	if !PathExists(img_dir) {
-		//	创建目录
-		if err := os.Mkdir(img_dir, os.ModePerm); err != nil {
-			return
-		}
-	}
+
 
 	var ui []byte
 
@@ -73,6 +67,15 @@ func SaveImage(ctx context.Context, ui []byte, fileName string, auto bool) {
 			return
 		}
 	}
+
+	//不存在则创建目录
+	if !PathExists(img_dir) {
+		//	创建目录
+		if err := os.Mkdir(img_dir, os.ModePerm); err != nil {
+			return
+		}
+	}
+
 	prex := ""
 	fileName, prex = getFileName(fileName, auto)
 
