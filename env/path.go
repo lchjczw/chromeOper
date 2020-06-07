@@ -1,7 +1,6 @@
 package env
 
 import (
-	"github.com/chromedp/chromedp"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -30,14 +29,4 @@ func AddDirToPath(dir string) error {
 
 }
 
-//将目录添加到path环境变量
-func SetChromeExtPath(env EnvInter) (chromedp.ExecAllocatorOption, error) {
-	dirTmp, _ := filepath.Split(env.ChromeExecPath())
 
-	dir, err := filepath.Abs(dirTmp)
-	if err != nil {
-		return nil, err
-	}
-
-	return chromedp.ExecPath(dir), nil
-}

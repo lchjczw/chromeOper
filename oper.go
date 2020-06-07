@@ -153,7 +153,7 @@ func Capture(ctx context.Context, sel, fileName string) error {
 	if sel != "" {
 		err = chromedp.Run(
 			ctx,
-			chromedp.Screenshot(sel, &ui),
+			chromedp.Screenshot(sel, &ui,chromedp.BySearch),
 		)
 	} else {
 		err = chromedp.Run(
